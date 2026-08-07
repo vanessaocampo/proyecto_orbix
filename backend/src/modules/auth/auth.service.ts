@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
+import jwt, { type SignOptions } from 'jsonwebtoken'
 import { env } from '../../config/env'
 import { prisma } from '../../config/prisma'
 import { ApiError } from '../../utils/ApiError'
@@ -16,6 +16,7 @@ type ChangePasswordInput = {
 }
 
 function signToken(payload: { id: number; correo: string; rol: string }): string {
+  const options: SignOptions = { expiresIn: env.JWT_EXPIRES_IN as SignOptions['expiresIn'] }
   return jwt.sign(
     {
       sub: payload.id.toString(),
@@ -23,7 +24,7 @@ function signToken(payload: { id: number; correo: string; rol: string }): string
       rol: payload.rol,
     },
     env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN },
+    options,
   )
 }
 

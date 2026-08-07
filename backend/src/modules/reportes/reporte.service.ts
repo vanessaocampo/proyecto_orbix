@@ -6,7 +6,7 @@ import { buildMeta, getPagination } from '../../utils/pagination'
 type CreateReporteInput = {
   nombre: string
   tipo: TipoReporte
-  parametros?: Prisma.InputJsonValue | null
+  parametros?: Record<string, unknown> | null
   idUsuario: number
 }
 
@@ -14,7 +14,15 @@ type ListQuery = { page?: number; limit?: number; tipo?: TipoReporte }
 
 export async function create(data: CreateReporteInput) {
   return prisma.reporte.create({
-    data,
+    data: {
+      nombre: data.nombre,
+      tipo: data.tipo,
+      parametros:
+        data.parametros === null
+          ? Prisma.DbNull
+          : (data.parametros as Prisma.InputJsonValue),
+      idUsuario: data.idUsuario,
+    },
     include: { usuario: { select: { idUsuario: true, nombre: true } } },
   })
 }
