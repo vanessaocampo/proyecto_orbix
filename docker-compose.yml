@@ -1,0 +1,52 @@
+# =========================================================
+# ORBIX - Docker Compose
+# SENA - ADSO - Ficha 3114227
+#
+# Notas:
+# - La BD es PostgreSQL en Neon (externo), NO se levanta un
+#   contenedor de base de datos local.
+# - Las credenciales llegan desde ./backend/.env (no se copian
+#   en la imagen de Docker).
+# - El backend aplica las migraciones de Prisma al arrancar
+#   (npx prisma migrate deploy) contra la BD de Neon.
+# - Cuando exista el frontend, se agrega como servicio y se
+#   conecta al backend por el nombre de red `backend:3001`.
+# =========================================================
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: orbix-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Frontend (futuro): se agrega como servicio y se conecta al
+  # backend a través de la red de compose usando http://backend:3001
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: orbix-frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5173:80"
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy
