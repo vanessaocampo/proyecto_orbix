@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { EstadoProducto } from '@prisma/client'
 
 export const createProductoSchema = z.object({
+  sku: z.string().trim().max(50).optional().nullable(),
   nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(150),
   descripcion: z.string().max(5000).optional().nullable(),
   precioCompra: z.coerce.number().nonnegative('El precio de compra no puede ser negativo').optional(),

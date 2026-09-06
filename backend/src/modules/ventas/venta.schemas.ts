@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EstadoVenta } from '@prisma/client'
+import { EstadoVenta, MetodoPago } from '@prisma/client'
 
 export const detalleVentaSchema = z.object({
   idProducto: z.coerce.number().int().positive('El producto es obligatorio'),
@@ -10,6 +10,7 @@ export const detalleVentaSchema = z.object({
 export const createVentaSchema = z.object({
   idCliente: z.coerce.number().int().positive('El cliente es obligatorio'),
   estado: z.nativeEnum(EstadoVenta).optional(),
+  metodoPago: z.nativeEnum(MetodoPago).optional(),
   items: z.array(detalleVentaSchema).min(1, 'Debe incluir al menos un producto'),
 })
 
@@ -23,6 +24,7 @@ export const listVentasQuerySchema = z.object({
   search: z.string().optional(),
   idCliente: z.coerce.number().int().positive().optional(),
   estado: z.nativeEnum(EstadoVenta).optional(),
+  metodoPago: z.nativeEnum(MetodoPago).optional(),
   desde: z.string().optional(),
   hasta: z.string().optional(),
 })

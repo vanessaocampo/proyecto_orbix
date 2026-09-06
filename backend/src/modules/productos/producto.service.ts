@@ -7,7 +7,7 @@ type CreateProductoInput = Pick<Producto, 'nombre' | 'precio' | 'idCategoria'> &
   Partial<
     Pick<
       Producto,
-      'descripcion' | 'precioCompra' | 'stock' | 'stockMinimo' | 'estado' | 'idProveedor'
+      'sku' | 'descripcion' | 'precioCompra' | 'stock' | 'stockMinimo' | 'estado' | 'idProveedor'
     >
   >
 type UpdateProductoInput = Partial<CreateProductoInput>

@@ -1,4 +1,4 @@
-import { Prisma, EstadoVenta } from '@prisma/client'
+import { Prisma, EstadoVenta, MetodoPago } from '@prisma/client'
 import { prisma } from '../../config/prisma'
 import { ApiError } from '../../utils/ApiError'
 import { buildMeta, getPagination } from '../../utils/pagination'
@@ -7,6 +7,7 @@ type CreateVentaInput = {
   idCliente: number
   idUsuario: number
   estado?: EstadoVenta
+  metodoPago?: MetodoPago
   items: { idProducto: number; cantidad: number; precioUnitario?: number }[]
 }
 
@@ -18,6 +19,7 @@ type ListQuery = {
   search?: string
   idCliente?: number
   estado?: EstadoVenta
+  metodoPago?: MetodoPago
   desde?: string
   hasta?: string
 }
@@ -75,6 +77,7 @@ export async function create(data: CreateVentaInput) {
         idCliente: data.idCliente,
         idUsuario: data.idUsuario,
         estado: data.estado,
+        metodoPago: data.metodoPago,
         total,
         detalles: { create: detalles },
       },
@@ -102,6 +105,7 @@ export async function list(query: ListQuery) {
   const where = {
     ...(query.idCliente ? { idCliente: query.idCliente } : {}),
     ...(query.estado ? { estado: query.estado } : {}),
+    ...(query.metodoPago ? { metodoPago: query.metodoPago } : {}),
     ...(query.desde || query.hasta
       ? {
           fecha: {

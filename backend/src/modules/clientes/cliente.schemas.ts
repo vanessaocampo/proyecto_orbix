@@ -7,6 +7,7 @@ export const createClienteSchema = z.object({
   telefono: z.string().trim().max(20).optional().nullable(),
   correo: z.string().trim().email('Correo inválido').max(120).optional().nullable(),
   direccion: z.string().trim().max(200).optional().nullable(),
+  ciudad: z.string().trim().max(100).optional().nullable(),
   segmento: z.nativeEnum(SegmentoCliente).optional(),
 })
 

@@ -4,7 +4,7 @@ import { buildMeta, getPagination } from '../../utils/pagination'
 import type { Cliente, SegmentoCliente } from '@prisma/client'
 
 type CreateClienteInput = Pick<Cliente, 'nombre' | 'documento'> &
-  Partial<Pick<Cliente, 'telefono' | 'correo' | 'direccion' | 'segmento'>>
+  Partial<Pick<Cliente, 'telefono' | 'correo' | 'direccion' | 'ciudad' | 'segmento'>>
 type UpdateClienteInput = Partial<CreateClienteInput>
 type ListQuery = { page?: number; limit?: number; search?: string; segmento?: SegmentoCliente }
 
