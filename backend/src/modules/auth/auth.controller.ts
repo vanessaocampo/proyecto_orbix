@@ -31,7 +31,7 @@ export async function refresh(req: Request, res: Response) {
 
   res.status(200).json({
     success: true,
-    data: { accessToken: result.accessToken }
+    data: { token: result.accessToken }
   })
 }
 
