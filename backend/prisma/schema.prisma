@@ -1,0 +1,225 @@
+// =========================================================
+// ORBIX - Esquema Prisma (PostgreSQL / Neon)
+// SENA - ADSO - Ficha 3114227
+//
+// Nota: los triggers y funciones de la base de datos originales
+// (fn_calcular_subtotal, fn_actualizar_total_venta, fn_descontar_stock,
+// fn_set_updated_at) se manejan ahora en la capa de servicios para
+// mantener la logica de negocio bajo control de la aplicacion.
+// =========================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EstadoGeneral {
+  activo
+  inactivo
+}
+
+enum EstadoProducto {
+  activo
+  inactivo
+  agotado
+  descontinuado
+}
+
+enum EstadoVenta {
+  pendiente
+  en_proceso
+  completada
+  cancelada
+  devuelta
+}
+
+enum MetodoPago {
+  efectivo
+  tarjeta
+  transferencia
+}
+
+enum RolUsuario {
+  admin
+  vendedor
+  inventario
+  consulta
+}
+
+enum SegmentoCliente {
+  minorista
+  mayorista
+  frecuente
+  nuevo
+}
+
+enum TipoMovimientoInv {
+  entrada
+  salida
+  ajuste
+  devolucion
+}
+
+enum TipoReporte {
+  general
+  periodo
+  equipo
+  proveedor
+  inventario
+}
+
+model Categoria {
+  idCategoria String     @id @default(uuid()) @map("id_categoria")
+  nombre      String     @unique @db.VarChar(100)
+  descripcion String?    @db.Text
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  productos   Producto[]
+
+  @@map("categorias")
+}
+
+model Proveedor {
+  idProveedor String        @id @default(uuid()) @map("id_proveedor")
+  nombre      String        @db.VarChar(150)
+  nit         String        @unique @db.VarChar(20)
+  telefono    String?       @db.VarChar(20)
+  correo      String?       @db.VarChar(120)
+  direccion   String?       @db.VarChar(200)
+  ciudad      String?       @db.VarChar(100)
+  estado      EstadoGeneral @default(activo)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  productos   Producto[]
+
+  @@map("proveedores")
+}
+
+model Usuario {
+  idUsuario             String                 @id @default(uuid()) @map("id_usuario")
+  nombre                String                 @db.VarChar(150)
+  correo                String                 @unique @db.VarChar(120)
+  passwordHash          String                 @map("password_hash") @db.VarChar(255)
+  rol                   RolUsuario             @default(vendedor)
+  estado                EstadoGeneral          @default(activo)
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  ventas                Venta[]
+  reportes              Reporte[]
+  inventarioMovimientos InventarioMovimiento[]
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  idCliente String          @id @default(uuid()) @map("id_cliente")
+  nombre    String          @db.VarChar(150)
+  documento String          @unique @db.VarChar(20)
+  telefono  String?         @db.VarChar(20)
+  correo    String?         @db.VarChar(120)
+  direccion String?         @db.VarChar(200)
+  ciudad    String?         @db.VarChar(100)
+  segmento  SegmentoCliente @default(nuevo)
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  ventas    Venta[]
+
+  @@map("clientes")
+}
+
+model Producto {
+  idProducto    String                 @id @default(uuid()) @map("id_producto")
+  sku           String?                @unique @db.VarChar(50)
+  nombre        String                 @db.VarChar(150)
+  descripcion   String?                @db.Text
+  precioCompra  Decimal                @default(0) @map("precio_compra") @db.Decimal(10, 2)
+  precio        Decimal                @db.Decimal(10, 2)
+  stock         Int                    @default(0)
+  stockMinimo   Int                    @default(0) @map("stock_minimo")
+  estado        EstadoProducto         @default(activo)
+  idCategoria   String                 @map("id_categoria")
+  idProveedor   String?                @map("id_proveedor")
+  createdAt     DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  categoria     Categoria              @relation(fields: [idCategoria], references: [idCategoria], onDelete: Restrict)
+  proveedor     Proveedor?             @relation(fields: [idProveedor], references: [idProveedor], onDelete: SetNull)
+  detalleVentas DetalleVenta[]
+  movimientos   InventarioMovimiento[]
+
+  @@index([idCategoria])
+  @@index([idProveedor])
+  @@index([estado])
+  @@map("productos")
+}
+
+model Venta {
+  idVenta    String         @id @default(uuid()) @map("id_venta")
+  fecha      DateTime       @default(now()) @db.Timestamptz(3)
+  estado     EstadoVenta    @default(pendiente)
+  metodoPago MetodoPago     @default(efectivo) @map("metodo_pago")
+  total      Decimal        @default(0) @db.Decimal(12, 2)
+  idCliente  String         @map("id_cliente")
+  idUsuario  String         @map("id_usuario")
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  cliente    Cliente        @relation(fields: [idCliente], references: [idCliente], onDelete: Restrict)
+  usuario    Usuario        @relation(fields: [idUsuario], references: [idUsuario], onDelete: Restrict)
+  detalles   DetalleVenta[]
+
+  @@index([idCliente])
+  @@index([idUsuario])
+  @@index([fecha])
+  @@index([estado])
+  @@map("ventas")
+}
+
+model DetalleVenta {
+  idDetalle      String   @id @default(uuid()) @map("id_detalle")
+  idVenta        String   @map("id_venta")
+  idProducto     String   @map("id_producto")
+  cantidad       Int
+  precioUnitario Decimal  @map("precio_unitario") @db.Decimal(10, 2)
+  subtotal       Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  venta          Venta    @relation(fields: [idVenta], references: [idVenta], onDelete: Cascade)
+  producto       Producto @relation(fields: [idProducto], references: [idProducto], onDelete: Restrict)
+
+  @@index([idVenta])
+  @@index([idProducto])
+  @@map("detalle_venta")
+}
+
+model InventarioMovimiento {
+  idMovimiento    String            @id @default(uuid()) @map("id_movimiento")
+  idProducto      String            @map("id_producto")
+  tipo            TipoMovimientoInv
+  cantidad        Int
+  stockResultante Int               @map("stock_resultante")
+  referencia      String?           @db.VarChar(150)
+  idUsuario       String?           @map("id_usuario")
+  fecha           DateTime          @default(now()) @db.Timestamptz(3)
+  producto        Producto          @relation(fields: [idProducto], references: [idProducto], onDelete: Restrict)
+  usuario         Usuario?          @relation(fields: [idUsuario], references: [idUsuario], onDelete: SetNull)
+
+  @@index([idProducto])
+  @@index([fecha])
+  @@map("inventario_movimientos")
+}
+
+model Reporte {
+  idReporte     String      @id @default(uuid()) @map("id_reporte")
+  nombre        String      @db.VarChar(100)
+  tipo          TipoReporte
+  parametros    Json?
+  fechaGenerado DateTime    @default(now()) @map("fecha_generado") @db.Timestamptz(3)
+  idUsuario     String      @map("id_usuario")
+  usuario       Usuario     @relation(fields: [idUsuario], references: [idUsuario], onDelete: Restrict)
+
+  @@index([idUsuario])
+  @@index([tipo])
+  @@map("reportes")
+}
