@@ -27,7 +27,7 @@ export function validate(schemas: Schemas): RequestHandler {
 }
 
 export const idParamSchema = z.object({
-  id: z.coerce.number().int().positive('El id debe ser un entero positivo'),
+  id: z.string().uuid('El id debe ser un UUID válido'),
 })
 
 export { z }
