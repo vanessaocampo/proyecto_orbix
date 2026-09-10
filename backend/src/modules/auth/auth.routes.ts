@@ -8,6 +8,8 @@ import { changePasswordSchema, loginSchema } from './auth.schemas'
 const router = Router()
 
 router.post('/login', validate({ body: loginSchema }), asyncHandler(authController.login))
+router.post('/refresh', asyncHandler(authController.refresh))
+router.post('/logout', asyncHandler(authController.logout))
 
 router.get('/me', authenticate, asyncHandler(authController.perfil))
 

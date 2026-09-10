@@ -4,9 +4,9 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: number
+        id: string
         correo: string
-        rol: RolUsuario
+        rol: import('@prisma/client').RolUsuario
       }
     }
   }

@@ -23,16 +23,16 @@ export async function list(req: Request, res: Response) {
 }
 
 export async function getById(req: Request, res: Response) {
-  const cliente = await clienteService.getById(Number(req.params.id))
+  const cliente = await clienteService.getById(req.params.id)
   res.status(200).json({ success: true, data: cliente })
 }
 
 export async function update(req: Request, res: Response) {
-  const cliente = await clienteService.update(Number(req.params.id), req.body)
+  const cliente = await clienteService.update(req.params.id, req.body)
   res.status(200).json({ success: true, data: cliente })
 }
 
 export async function remove(req: Request, res: Response) {
-  await clienteService.remove(Number(req.params.id))
+  await clienteService.remove(req.params.id)
   res.status(204).end()
 }

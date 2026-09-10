@@ -26,7 +26,7 @@ export async function list(query: ListQuery) {
   return { items, meta: buildMeta(page, limit, total) }
 }
 
-export async function getById(id: number) {
+export async function getById(id: string) {
   const categoria = await prisma.categoria.findUnique({ where: { idCategoria: id } })
   if (!categoria) {
     throw ApiError.notFound('Categoría no encontrada')
@@ -34,12 +34,12 @@ export async function getById(id: number) {
   return categoria
 }
 
-export async function update(id: number, data: UpdateCategoriaInput) {
+export async function update(id: string, data: UpdateCategoriaInput) {
   await getById(id)
   return prisma.categoria.update({ where: { idCategoria: id }, data })
 }
 
-export async function remove(id: number) {
+export async function remove(id: string) {
   await getById(id)
   await prisma.categoria.delete({ where: { idCategoria: id } })
 }

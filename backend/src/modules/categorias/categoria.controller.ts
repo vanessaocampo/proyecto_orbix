@@ -17,16 +17,16 @@ export async function list(req: Request, res: Response) {
 }
 
 export async function getById(req: Request, res: Response) {
-  const categoria = await categoriaService.getById(Number(req.params.id))
+  const categoria = await categoriaService.getById(req.params.id)
   res.status(200).json({ success: true, data: categoria })
 }
 
 export async function update(req: Request, res: Response) {
-  const categoria = await categoriaService.update(Number(req.params.id), req.body)
+  const categoria = await categoriaService.update(req.params.id, req.body)
   res.status(200).json({ success: true, data: categoria })
 }
 
 export async function remove(req: Request, res: Response) {
-  await categoriaService.remove(Number(req.params.id))
+  await categoriaService.remove(req.params.id)
   res.status(204).end()
 }

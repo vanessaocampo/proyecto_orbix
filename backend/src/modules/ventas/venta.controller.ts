@@ -15,19 +15,19 @@ export async function list(req: Request, res: Response) {
 }
 
 export async function getById(req: Request, res: Response) {
-  const venta = await ventaService.getById(Number(req.params.id))
+  const venta = await ventaService.getById(req.params.id)
   res.status(200).json({ success: true, data: venta })
 }
 
 export async function updateEstado(req: Request, res: Response) {
   const venta = await ventaService.updateEstado({
-    id: Number(req.params.id),
+    id: req.params.id,
     estado: req.body.estado,
   })
   res.status(200).json({ success: true, data: venta })
 }
 
 export async function remove(req: Request, res: Response) {
-  await ventaService.remove(Number(req.params.id))
+  await ventaService.remove(req.params.id)
   res.status(204).end()
 }

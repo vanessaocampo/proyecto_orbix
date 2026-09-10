@@ -23,7 +23,7 @@ export const authenticate: RequestHandler = asyncHandler(async (req, _res, next)
   const payload = jwt.verify(token, env.JWT_SECRET) as JwtPayload
 
   req.user = {
-    id: Number(payload.sub),
+    id: payload.sub,
     correo: payload.correo,
     rol: payload.rol,
   }

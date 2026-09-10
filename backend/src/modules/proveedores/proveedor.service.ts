@@ -32,7 +32,7 @@ export async function list(query: ListQuery) {
   return { items, meta: buildMeta(page, limit, total) }
 }
 
-export async function getById(id: number) {
+export async function getById(id: string) {
   const proveedor = await prisma.proveedor.findUnique({ where: { idProveedor: id } })
   if (!proveedor) {
     throw ApiError.notFound('Proveedor no encontrado')
@@ -40,12 +40,12 @@ export async function getById(id: number) {
   return proveedor
 }
 
-export async function update(id: number, data: UpdateProveedorInput) {
+export async function update(id: string, data: UpdateProveedorInput) {
   await getById(id)
   return prisma.proveedor.update({ where: { idProveedor: id }, data })
 }
 
-export async function remove(id: number) {
+export async function remove(id: string) {
   await getById(id)
   await prisma.proveedor.delete({ where: { idProveedor: id } })
 }

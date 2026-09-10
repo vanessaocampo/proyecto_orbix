@@ -62,7 +62,7 @@ export async function list(query: ListQuery) {
   return { items, meta: buildMeta(page, limit, total) }
 }
 
-export async function getById(id: number) {
+export async function getById(id: string) {
   const usuario = await prisma.usuario.findUnique({ where: { idUsuario: id }, select: safeSelect })
   if (!usuario) {
     throw ApiError.notFound('Usuario no encontrado')
@@ -70,7 +70,7 @@ export async function getById(id: number) {
   return usuario
 }
 
-export async function update(id: number, data: UpdateUsuarioInput) {
+export async function update(id: string, data: UpdateUsuarioInput) {
   await getById(id)
 
   const { password, ...rest } = data
@@ -83,7 +83,7 @@ export async function update(id: number, data: UpdateUsuarioInput) {
   return prisma.usuario.update({ where: { idUsuario: id }, data: payload, select: safeSelect })
 }
 
-export async function remove(id: number, requesterId: number) {
+export async function remove(id: string, requesterId: string) {
   if (id === requesterId) {
     throw ApiError.badRequest('No puedes eliminar tu propio usuario')
   }

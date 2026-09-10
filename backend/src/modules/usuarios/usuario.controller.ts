@@ -17,16 +17,16 @@ export async function list(req: Request, res: Response) {
 }
 
 export async function getById(req: Request, res: Response) {
-  const usuario = await usuarioService.getById(Number(req.params.id))
+  const usuario = await usuarioService.getById(req.params.id)
   res.status(200).json({ success: true, data: usuario })
 }
 
 export async function update(req: Request, res: Response) {
-  const usuario = await usuarioService.update(Number(req.params.id), req.body)
+  const usuario = await usuarioService.update(req.params.id, req.body)
   res.status(200).json({ success: true, data: usuario })
 }
 
 export async function remove(req: Request, res: Response) {
-  await usuarioService.remove(Number(req.params.id), req.user!.id)
+  await usuarioService.remove(req.params.id, req.user!.id)
   res.status(204).end()
 }

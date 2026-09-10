@@ -4,20 +4,20 @@ import { ApiError } from '../../utils/ApiError'
 import { buildMeta, getPagination } from '../../utils/pagination'
 
 type CreateVentaInput = {
-  idCliente: number
-  idUsuario: number
+  idCliente: string
+  idUsuario: string
   estado?: EstadoVenta
   metodoPago?: MetodoPago
-  items: { idProducto: number; cantidad: number; precioUnitario?: number }[]
+  items: { idProducto: string; cantidad: number; precioUnitario?: number }[]
 }
 
-type UpdateEstadoInput = { id: number; estado: EstadoVenta }
+type UpdateEstadoInput = { id: string; estado: EstadoVenta }
 
 type ListQuery = {
   page?: number
   limit?: number
   search?: string
-  idCliente?: number
+  idCliente?: string
   estado?: EstadoVenta
   metodoPago?: MetodoPago
   desde?: string
@@ -124,7 +124,7 @@ export async function list(query: ListQuery) {
   return { items, meta: buildMeta(page, limit, total) }
 }
 
-export async function getById(id: number) {
+export async function getById(id: string) {
   const venta = await prisma.venta.findUnique({ where: { idVenta: id }, include })
   if (!venta) {
     throw ApiError.notFound('Venta no encontrada')
@@ -198,7 +198,7 @@ export async function updateEstado({ id, estado }: UpdateEstadoInput) {
   })
 }
 
-export async function remove(id: number) {
+export async function remove(id: string) {
   await prisma.$transaction(async (tx) => {
     const venta = await tx.venta.findUnique({
       where: { idVenta: id },

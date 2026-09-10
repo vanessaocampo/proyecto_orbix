@@ -73,7 +73,7 @@ enum TipoReporte {
 }
 
 model Categoria {
-  idCategoria Int        @id @default(autoincrement()) @map("id_categoria")
+  idCategoria String     @id @default(uuid()) @map("id_categoria")
   nombre      String     @unique @db.VarChar(100)
   descripcion String?    @db.Text
   createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -84,7 +84,7 @@ model Categoria {
 }
 
 model Proveedor {
-  idProveedor Int           @id @default(autoincrement()) @map("id_proveedor")
+  idProveedor String        @id @default(uuid()) @map("id_proveedor")
   nombre      String        @db.VarChar(150)
   nit         String        @unique @db.VarChar(20)
   telefono    String?       @db.VarChar(20)
@@ -100,7 +100,7 @@ model Proveedor {
 }
 
 model Usuario {
-  idUsuario             Int                    @id @default(autoincrement()) @map("id_usuario")
+  idUsuario             String                 @id @default(uuid()) @map("id_usuario")
   nombre                String                 @db.VarChar(150)
   correo                String                 @unique @db.VarChar(120)
   passwordHash          String                 @map("password_hash") @db.VarChar(255)
@@ -116,7 +116,7 @@ model Usuario {
 }
 
 model Cliente {
-  idCliente Int             @id @default(autoincrement()) @map("id_cliente")
+  idCliente String          @id @default(uuid()) @map("id_cliente")
   nombre    String          @db.VarChar(150)
   documento String          @unique @db.VarChar(20)
   telefono  String?         @db.VarChar(20)
@@ -132,7 +132,7 @@ model Cliente {
 }
 
 model Producto {
-  idProducto    Int                    @id @default(autoincrement()) @map("id_producto")
+  idProducto    String                 @id @default(uuid()) @map("id_producto")
   sku           String?                @unique @db.VarChar(50)
   nombre        String                 @db.VarChar(150)
   descripcion   String?                @db.Text
@@ -141,8 +141,8 @@ model Producto {
   stock         Int                    @default(0)
   stockMinimo   Int                    @default(0) @map("stock_minimo")
   estado        EstadoProducto         @default(activo)
-  idCategoria   Int                    @map("id_categoria")
-  idProveedor   Int?                   @map("id_proveedor")
+  idCategoria   String                 @map("id_categoria")
+  idProveedor   String?                @map("id_proveedor")
   createdAt     DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
   categoria     Categoria              @relation(fields: [idCategoria], references: [idCategoria], onDelete: Restrict)
@@ -157,13 +157,13 @@ model Producto {
 }
 
 model Venta {
-  idVenta    Int            @id @default(autoincrement()) @map("id_venta")
+  idVenta    String         @id @default(uuid()) @map("id_venta")
   fecha      DateTime       @default(now()) @db.Timestamptz(3)
   estado     EstadoVenta    @default(pendiente)
   metodoPago MetodoPago     @default(efectivo) @map("metodo_pago")
   total      Decimal        @default(0) @db.Decimal(12, 2)
-  idCliente  Int            @map("id_cliente")
-  idUsuario  Int            @map("id_usuario")
+  idCliente  String         @map("id_cliente")
+  idUsuario  String         @map("id_usuario")
   createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt  DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
   cliente    Cliente        @relation(fields: [idCliente], references: [idCliente], onDelete: Restrict)
@@ -178,9 +178,9 @@ model Venta {
 }
 
 model DetalleVenta {
-  idDetalle      Int      @id @default(autoincrement()) @map("id_detalle")
-  idVenta        Int      @map("id_venta")
-  idProducto     Int      @map("id_producto")
+  idDetalle      String   @id @default(uuid()) @map("id_detalle")
+  idVenta        String   @map("id_venta")
+  idProducto     String   @map("id_producto")
   cantidad       Int
   precioUnitario Decimal  @map("precio_unitario") @db.Decimal(10, 2)
   subtotal       Decimal  @default(0) @db.Decimal(12, 2)
@@ -194,13 +194,13 @@ model DetalleVenta {
 }
 
 model InventarioMovimiento {
-  idMovimiento    Int               @id @default(autoincrement()) @map("id_movimiento")
-  idProducto      Int               @map("id_producto")
+  idMovimiento    String            @id @default(uuid()) @map("id_movimiento")
+  idProducto      String            @map("id_producto")
   tipo            TipoMovimientoInv
   cantidad        Int
   stockResultante Int               @map("stock_resultante")
   referencia      String?           @db.VarChar(150)
-  idUsuario       Int?              @map("id_usuario")
+  idUsuario       String?           @map("id_usuario")
   fecha           DateTime          @default(now()) @db.Timestamptz(3)
   producto        Producto          @relation(fields: [idProducto], references: [idProducto], onDelete: Restrict)
   usuario         Usuario?          @relation(fields: [idUsuario], references: [idUsuario], onDelete: SetNull)
@@ -211,12 +211,12 @@ model InventarioMovimiento {
 }
 
 model Reporte {
-  idReporte     Int         @id @default(autoincrement()) @map("id_reporte")
+  idReporte     String      @id @default(uuid()) @map("id_reporte")
   nombre        String      @db.VarChar(100)
   tipo          TipoReporte
   parametros    Json?
   fechaGenerado DateTime    @default(now()) @map("fecha_generado") @db.Timestamptz(3)
-  idUsuario     Int         @map("id_usuario")
+  idUsuario     String      @map("id_usuario")
   usuario       Usuario     @relation(fields: [idUsuario], references: [idUsuario], onDelete: Restrict)
 
   @@index([idUsuario])

@@ -15,8 +15,8 @@ type ListQuery = {
   page?: number
   limit?: number
   search?: string
-  idCategoria?: number
-  idProveedor?: number
+  idCategoria?: string
+  idProveedor?: string
   estado?: EstadoProducto
 }
 
@@ -49,7 +49,7 @@ export async function list(query: ListQuery) {
   return { items, meta: buildMeta(page, limit, total) }
 }
 
-export async function getById(id: number) {
+export async function getById(id: string) {
   const producto = await prisma.producto.findUnique({ where: { idProducto: id }, include })
   if (!producto) {
     throw ApiError.notFound('Producto no encontrado')
@@ -57,7 +57,7 @@ export async function getById(id: number) {
   return producto
 }
 
-export async function update(id: number, data: UpdateProductoInput) {
+export async function update(id: string, data: UpdateProductoInput) {
   await getById(id)
 
   if (data.idCategoria) {
@@ -67,12 +67,12 @@ export async function update(id: number, data: UpdateProductoInput) {
   return prisma.producto.update({ where: { idProducto: id }, data, include })
 }
 
-export async function remove(id: number) {
+export async function remove(id: string) {
   await getById(id)
   await prisma.producto.delete({ where: { idProducto: id } })
 }
 
-async function ensureCategoriaExists(idCategoria: number) {
+async function ensureCategoriaExists(idCategoria: string) {
   const categoria = await prisma.categoria.findUnique({ where: { idCategoria } })
   if (!categoria) {
     throw ApiError.badRequest(`La categoría ${idCategoria} no existe`)

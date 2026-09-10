@@ -7,7 +7,7 @@ type CreateReporteInput = {
   nombre: string
   tipo: TipoReporte
   parametros?: Record<string, unknown> | null
-  idUsuario: number
+  idUsuario: string
 }
 
 type ListQuery = { page?: number; limit?: number; tipo?: TipoReporte }
@@ -46,7 +46,7 @@ export async function list(query: ListQuery) {
   return { items, meta: buildMeta(page, limit, total) }
 }
 
-export async function getById(id: number) {
+export async function getById(id: string) {
   const reporte = await prisma.reporte.findUnique({
     where: { idReporte: id },
     include: { usuario: { select: { idUsuario: true, nombre: true } } },
@@ -57,7 +57,7 @@ export async function getById(id: number) {
   return reporte
 }
 
-export async function remove(id: number) {
+export async function remove(id: string) {
   await getById(id)
   await prisma.reporte.delete({ where: { idReporte: id } })
 }

@@ -37,7 +37,7 @@ export async function list(query: ListQuery) {
   return { items, meta: buildMeta(page, limit, total) }
 }
 
-export async function getById(id: number) {
+export async function getById(id: string) {
   const cliente = await prisma.cliente.findUnique({ where: { idCliente: id } })
   if (!cliente) {
     throw ApiError.notFound('Cliente no encontrado')
@@ -45,12 +45,12 @@ export async function getById(id: number) {
   return cliente
 }
 
-export async function update(id: number, data: UpdateClienteInput) {
+export async function update(id: string, data: UpdateClienteInput) {
   await getById(id)
   return prisma.cliente.update({ where: { idCliente: id }, data })
 }
 
-export async function remove(id: number) {
+export async function remove(id: string) {
   await getById(id)
   await prisma.cliente.delete({ where: { idCliente: id } })
 }

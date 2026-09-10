@@ -12,16 +12,16 @@ export async function list(req: Request, res: Response) {
 }
 
 export async function getById(req: Request, res: Response) {
-  const producto = await productoService.getById(Number(req.params.id))
+  const producto = await productoService.getById(req.params.id)
   res.status(200).json({ success: true, data: producto })
 }
 
 export async function update(req: Request, res: Response) {
-  const producto = await productoService.update(Number(req.params.id), req.body)
+  const producto = await productoService.update(req.params.id, req.body)
   res.status(200).json({ success: true, data: producto })
 }
 
 export async function remove(req: Request, res: Response) {
-  await productoService.remove(Number(req.params.id))
+  await productoService.remove(req.params.id)
   res.status(204).end()
 }

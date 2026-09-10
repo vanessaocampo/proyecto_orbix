@@ -12,12 +12,12 @@ export async function list(req: Request, res: Response) {
 }
 
 export async function getById(req: Request, res: Response) {
-  const reporte = await reporteService.getById(Number(req.params.id))
+  const reporte = await reporteService.getById(req.params.id)
   res.status(200).json({ success: true, data: reporte })
 }
 
 export async function remove(req: Request, res: Response) {
-  await reporteService.remove(Number(req.params.id))
+  await reporteService.remove(req.params.id)
   res.status(204).end()
 }
 

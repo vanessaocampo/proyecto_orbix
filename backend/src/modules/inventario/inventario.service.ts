@@ -4,23 +4,23 @@ import { ApiError } from '../../utils/ApiError'
 import { buildMeta, getPagination } from '../../utils/pagination'
 
 type MovimientoInput = {
-  idProducto: number
+  idProducto: string
   cantidad: number
   referencia?: string | null
-  idUsuario: number
+  idUsuario: string
 }
 
 type AjusteInput = {
-  idProducto: number
+  idProducto: string
   nuevoStock: number
   referencia?: string | null
-  idUsuario: number
+  idUsuario: string
 }
 
 type ListQuery = {
   page?: number
   limit?: number
-  idProducto?: number
+  idProducto?: string
   tipo?: TipoMovimientoInv
   desde?: string
   hasta?: string
@@ -31,7 +31,7 @@ const include = {
   usuario: { select: { idUsuario: true, nombre: true } },
 } as const
 
-async function getProducto(tx: PrismaTransactionClient, idProducto: number) {
+async function getProducto(tx: PrismaTransactionClient, idProducto: string) {
   const producto = await tx.producto.findUnique({ where: { idProducto } })
   if (!producto) {
     throw ApiError.badRequest(`El producto ${idProducto} no existe`)
@@ -42,12 +42,12 @@ async function getProducto(tx: PrismaTransactionClient, idProducto: number) {
 async function registrarMovimiento(
   tx: PrismaTransactionClient,
   data: {
-    idProducto: number
+    idProducto: string
     tipo: TipoMovimientoInv
     cantidad: number
     stockResultante: number
     referencia?: string | null
-    idUsuario: number
+    idUsuario: string
   },
 ) {
   return tx.inventarioMovimiento.create({
