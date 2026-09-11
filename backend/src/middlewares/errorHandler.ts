@@ -27,6 +27,9 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     } else if (err.code === 'P2025') {
       statusCode = 404
       message = 'Registro no encontrado'
+    } else if (err.code === 'P2028') {
+      statusCode = 503
+      message = 'La base de datos tardó demasiado en responder. Inténtalo de nuevo'
     }
   } else if (err instanceof Prisma.PrismaClientValidationError) {
     statusCode = 400

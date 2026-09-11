@@ -116,8 +116,9 @@ model Usuario {
 }
 
 model Cliente {
-  idCliente String          @id @default(uuid()) @map("id_cliente")
-  nombre    String          @db.VarChar(150)
+  idCliente      String          @id @default(uuid()) @map("id_cliente")
+  codigoCliente  String?         @unique @map("codigo_cliente") @db.VarChar(50)
+  nombre         String          @db.VarChar(150)
   documento String          @unique @db.VarChar(20)
   telefono  String?         @db.VarChar(20)
   correo    String?         @db.VarChar(120)
@@ -157,8 +158,9 @@ model Producto {
 }
 
 model Venta {
-  idVenta    String         @id @default(uuid()) @map("id_venta")
-  fecha      DateTime       @default(now()) @db.Timestamptz(3)
+  idVenta     String         @id @default(uuid()) @map("id_venta")
+  codigoVenta String?        @unique @map("codigo_venta")
+  fecha       DateTime       @default(now()) @db.Timestamptz(3)
   estado     EstadoVenta    @default(pendiente)
   metodoPago MetodoPago     @default(efectivo) @map("metodo_pago")
   total      Decimal        @default(0) @db.Decimal(12, 2)

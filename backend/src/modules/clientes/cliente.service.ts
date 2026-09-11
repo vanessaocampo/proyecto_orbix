@@ -11,7 +11,24 @@ type ListQuery = { page?: number; limit?: number; search?: string; segmento?: Se
 export type { ListQuery }
 
 export async function create(data: CreateClienteInput) {
-  return prisma.cliente.create({ data })
+  return prisma.cliente.create({ data: { ...data, codigoCliente: await generarCodigoCliente() } })
+}
+
+async function generarCodigoCliente(): Promise<string> {
+  const clientes = await prisma.cliente.findMany({
+    where: { codigoCliente: { not: null } },
+    select: { codigoCliente: true },
+  })
+
+  let siguienteNumero = 0
+  for (const cliente of clientes) {
+    const numero = Number((cliente.codigoCliente ?? "").replace(/^\D+/, ""))
+    if (Number.isInteger(numero) && numero > siguienteNumero) {
+      siguienteNumero = numero
+    }
+  }
+
+  return `CLI-${String(siguienteNumero + 1).padStart(3, "0")}`
 }
 
 export async function list(query: ListQuery) {

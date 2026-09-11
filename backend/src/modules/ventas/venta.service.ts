@@ -34,6 +34,10 @@ const include = {
 
 const estadosSinStock = [EstadoVenta.cancelada, EstadoVenta.devuelta] as const
 
+// Neon (DB remota) tiene latencia alta por consulta; la transacción por defecto
+// expira a los 5s. Subimos maxWait/timeout y reducimos viajes a la BD.
+const TRANSACTION_OPTS = { maxWait: 15000, timeout: 60000 } as const
+
 export async function create(data: CreateVentaInput) {
   return prisma.$transaction(async (tx) => {
     const cliente = await tx.cliente.findUnique({ where: { idCliente: data.idCliente } })
@@ -41,11 +45,22 @@ export async function create(data: CreateVentaInput) {
       throw ApiError.badRequest(`El cliente ${data.idCliente} no existe`)
     }
 
-    const detalles = []
+    const idsProductos = [...new Set(data.items.map((item) => item.idProducto))]
+    const productos = await tx.producto.findMany({
+      where: { idProducto: { in: idsProductos } },
+    })
+    const productoPorId = new Map(productos.map((p) => [p.idProducto, p]))
+
+    const detalles: {
+      idProducto: string
+      cantidad: number
+      precioUnitario: Prisma.Decimal
+      subtotal: Prisma.Decimal
+    }[] = []
     let total = new Prisma.Decimal(0)
 
     for (const item of data.items) {
-      const producto = await tx.producto.findUnique({ where: { idProducto: item.idProducto } })
+      const producto = productoPorId.get(item.idProducto)
       if (!producto) {
         throw ApiError.badRequest(`El producto ${item.idProducto} no existe`)
       }
@@ -55,8 +70,8 @@ export async function create(data: CreateVentaInput) {
         )
       }
 
-      const precioUnitario = item.precioUnitario ?? producto.precio
-      const subtotal = new Prisma.Decimal(precioUnitario).mul(item.cantidad)
+      const precioUnitario = new Prisma.Decimal(item.precioUnitario ?? producto.precio)
+      const subtotal = precioUnitario.mul(item.cantidad)
       total = total.add(subtotal)
 
       detalles.push({
@@ -65,17 +80,13 @@ export async function create(data: CreateVentaInput) {
         precioUnitario,
         subtotal,
       })
-
-      await tx.producto.update({
-        where: { idProducto: item.idProducto },
-        data: { stock: { decrement: item.cantidad } },
-      })
     }
 
     const venta = await tx.venta.create({
       data: {
         idCliente: data.idCliente,
         idUsuario: data.idUsuario,
+        codigoVenta: await generarCodigoVenta(tx),
         estado: data.estado,
         metodoPago: data.metodoPago,
         total,
@@ -83,6 +94,15 @@ export async function create(data: CreateVentaInput) {
       },
       include,
     })
+
+    await Promise.all(
+      detalles.map((d) =>
+        tx.producto.update({
+          where: { idProducto: d.idProducto },
+          data: { stock: { decrement: d.cantidad } },
+        }),
+      ),
+    )
 
     await tx.inventarioMovimiento.createMany({
       data: detalles.map((d) => ({
@@ -96,7 +116,7 @@ export async function create(data: CreateVentaInput) {
     })
 
     return venta
-  })
+  }, TRANSACTION_OPTS)
 }
 
 export async function list(query: ListQuery) {
@@ -151,27 +171,36 @@ export async function updateEstado({ id, estado }: UpdateEstadoInput) {
     const restauraStockPendiente = estabaRestaurado && !nuevoRestaurado
 
     if (restauraStock) {
-      for (const d of venta.detalles) {
-        await tx.producto.update({
-          where: { idProducto: d.idProducto },
-          data: { stock: { increment: d.cantidad } },
-        })
-      }
+      await Promise.all(
+        venta.detalles.map((d) =>
+          tx.producto.update({
+            where: { idProducto: d.idProducto },
+            data: { stock: { increment: d.cantidad } },
+          }),
+        ),
+      )
     }
 
     if (restauraStockPendiente) {
+      const ids = venta.detalles.map((d) => d.idProducto)
+      const productos = await tx.producto.findMany({ where: { idProducto: { in: ids } } })
+      const stockPorId = new Map(productos.map((p) => [p.idProducto, p.stock]))
       for (const d of venta.detalles) {
-        const producto = await tx.producto.findUnique({ where: { idProducto: d.idProducto } })
-        if (!producto || producto.stock < d.cantidad) {
+        const stock = stockPorId.get(d.idProducto) ?? 0
+        if (stock < d.cantidad) {
           throw ApiError.badRequest(
             `Stock insuficiente para reactivar la venta ${id} (producto ${d.idProducto})`,
           )
         }
-        await tx.producto.update({
-          where: { idProducto: d.idProducto },
-          data: { stock: { decrement: d.cantidad } },
-        })
       }
+      await Promise.all(
+        venta.detalles.map((d) =>
+          tx.producto.update({
+            where: { idProducto: d.idProducto },
+            data: { stock: { decrement: d.cantidad } },
+          }),
+        ),
+      )
     }
 
     const actualizada = await tx.venta.update({
@@ -195,7 +224,7 @@ export async function updateEstado({ id, estado }: UpdateEstadoInput) {
     }
 
     return actualizada
-  })
+  }, TRANSACTION_OPTS)
 }
 
 export async function remove(id: string) {
@@ -209,15 +238,34 @@ export async function remove(id: string) {
     }
 
     if (venta.estado !== 'cancelada' && venta.estado !== 'devuelta') {
-      for (const d of venta.detalles) {
-        await tx.producto.update({
-          where: { idProducto: d.idProducto },
-          data: { stock: { increment: d.cantidad } },
-        })
-      }
+      await Promise.all(
+        venta.detalles.map((d) =>
+          tx.producto.update({
+            where: { idProducto: d.idProducto },
+            data: { stock: { increment: d.cantidad } },
+          }),
+        ),
+      )
     }
 
     await tx.inventarioMovimiento.deleteMany({ where: { referencia: `venta #${id}` } })
     await tx.venta.delete({ where: { idVenta: id } })
+  }, TRANSACTION_OPTS)
+}
+
+async function generarCodigoVenta(tx: Prisma.TransactionClient): Promise<string> {
+  const ventas = await tx.venta.findMany({
+    where: { codigoVenta: { not: '' } },
+    select: { codigoVenta: true },
   })
+
+  let siguienteNumero = 0
+  for (const venta of ventas) {
+    const numero = Number((venta.codigoVenta ?? '').replace(/^\D+/, ''))
+    if (Number.isInteger(numero) && numero > siguienteNumero) {
+      siguienteNumero = numero
+    }
+  }
+
+  return `ORD-${String(siguienteNumero + 1).padStart(3, '0')}`
 }
