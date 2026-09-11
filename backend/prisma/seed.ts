@@ -52,9 +52,9 @@ async function main() {
 
   // --- Clientes ---
   const cliData = [
-    { nombre: 'Tienda El Ahorro', documento: '10123456', telefono: '3015557788', correo: 'elahorro@mail.com', direccion: 'Cra 20 #15-30', segmento: 'mayorista' as const },
-    { nombre: 'María Fernanda Gómez', documento: '43567890', telefono: '3126667788', correo: 'mfgomez@mail.com', direccion: 'Cll 8 #9-12', segmento: 'minorista' as const },
-    { nombre: 'Comercial Los Andes', documento: '9001112223', telefono: '3187778899', correo: 'compras@losandes.com', direccion: 'Av 30 #40-10', segmento: 'frecuente' as const }
+    { codigoCliente: 'CLI-001', nombre: 'Tienda El Ahorro', documento: '10123456', telefono: '3015557788', correo: 'elahorro@mail.com', direccion: 'Cra 20 #15-30', segmento: 'mayorista' as const },
+    { codigoCliente: 'CLI-002', nombre: 'María Fernanda Gómez', documento: '43567890', telefono: '3126667788', correo: 'mfgomez@mail.com', direccion: 'Cll 8 #9-12', segmento: 'minorista' as const },
+    { codigoCliente: 'CLI-003', nombre: 'Comercial Los Andes', documento: '9001112223', telefono: '3187778899', correo: 'compras@losandes.com', direccion: 'Av 30 #40-10', segmento: 'frecuente' as const }
   ]
   const clientes = []
   for (const c of cliData) {
@@ -87,7 +87,7 @@ async function main() {
     await prisma.$transaction(async (tx) => {
       const v1 = await tx.venta.create({
         data: {
-          estado: 'completada', total: 41000, idCliente: clientes[0].idCliente, idUsuario: usuarios[2].idUsuario,
+          codigoVenta: 'ORD-001', estado: 'completada', total: 41000, idCliente: clientes[0].idCliente, idUsuario: usuarios[2].idUsuario,
           detalles: { create: [
             { idProducto: productos[0].idProducto, cantidad: 10, precioUnitario: 2500, subtotal: 25000 },
             { idProducto: productos[2].idProducto, cantidad: 5, precioUnitario: 3200, subtotal: 16000 }
@@ -96,7 +96,7 @@ async function main() {
       })
       const v2 = await tx.venta.create({
         data: {
-          estado: 'pendiente', total: 25500, idCliente: clientes[1].idCliente, idUsuario: usuarios[2].idUsuario,
+          codigoVenta: 'ORD-002', estado: 'pendiente', total: 25500, idCliente: clientes[1].idCliente, idUsuario: usuarios[2].idUsuario,
           detalles: { create: [
             { idProducto: productos[1].idProducto, cantidad: 3, precioUnitario: 8500, subtotal: 25500 }
           ]}
