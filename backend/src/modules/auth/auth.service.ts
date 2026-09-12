@@ -69,7 +69,20 @@ export async function login(input: LoginInput) {
 export async function getPerfil(idUsuario: string) {
   const usuario = await prisma.usuario.findUnique({
     where: { idUsuario },
-    select: { idUsuario: true, nombre: true, correo: true, rol: true, estado: true, createdAt: true },
+    select: { 
+      idUsuario: true, 
+      nombre: true, 
+      correo: true, 
+      rol: true, 
+      estado: true, 
+      createdAt: true,
+      identificacion: true,
+      correoPersonal: true,
+      direccion: true,
+      celular: true,
+      fechaNacimiento: true,
+      fechaIngreso: true
+    },
   })
   if (!usuario) { throw ApiError.notFound('Usuario no encontrado') }
   return usuario

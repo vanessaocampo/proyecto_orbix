@@ -101,8 +101,14 @@ model Proveedor {
 
 model Usuario {
   idUsuario             String                 @id @default(uuid()) @map("id_usuario")
+  identificacion        String?                @unique @db.VarChar(50)
   nombre                String                 @db.VarChar(150)
-  correo                String                 @unique @db.VarChar(120)
+  correo                String                 @unique @db.VarChar(120) // Correo corporativo
+  correoPersonal        String?                @map("correo_personal") @db.VarChar(120)
+  direccion             String?                @db.VarChar(255)
+  celular               String?                @db.VarChar(20)
+  fechaNacimiento       DateTime?              @map("fecha_nacimiento") @db.Date
+  fechaIngreso          DateTime?              @map("fecha_ingreso") @db.Date
   passwordHash          String                 @map("password_hash") @db.VarChar(255)
   rol                   RolUsuario             @default(vendedor)
   estado                EstadoGeneral          @default(activo)
