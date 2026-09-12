@@ -14,6 +14,14 @@ export async function login(req: Request, res: Response) {
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   })
 
+  // Send access token as httpOnly cookie (for dual support)
+  res.cookie('accessToken', result.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 12 * 60 * 60 * 1000 // 12 hours
+  })
+
   res.status(200).json({ 
     success: true, 
     data: { token: result.accessToken, usuario: result.usuario } 
@@ -28,6 +36,14 @@ export async function refresh(req: Request, res: Response) {
   }
 
   const result = await authService.refreshTokenLogic(refreshToken)
+
+  // Also update cookie
+  res.cookie('accessToken', result.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 12 * 60 * 60 * 1000
+  })
 
   res.status(200).json({
     success: true,
@@ -51,5 +67,6 @@ export async function changePassword(req: Request, res: Response) {
 
 export async function logout(req: Request, res: Response) {
   res.clearCookie('refreshToken')
+  res.clearCookie('accessToken')
   res.status(200).json({ success: true, message: 'Sesión cerrada correctamente' })
 }

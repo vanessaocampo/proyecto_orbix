@@ -11,15 +11,20 @@ type JwtPayload = {
   rol: RolUsuario
 }
 
-function extractToken(authorization?: string): string {
-  if (!authorization || !authorization.startsWith('Bearer ')) {
-    throw ApiError.unauthorized('Token de autenticación requerido')
-  }
-  return authorization.slice('Bearer '.length)
-}
-
 export const authenticate: RequestHandler = asyncHandler(async (req, _res, next) => {
-  const token = extractToken(req.headers.authorization)
+  let token = req.cookies?.accessToken
+
+  if (!token) {
+    const authHeader = req.headers.authorization
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice('Bearer '.length)
+    }
+  }
+
+  if (!token) {
+    throw ApiError.unauthorized('Token de autenticación requerido (header o cookie)')
+  }
+
   const payload = jwt.verify(token, env.JWT_SECRET) as JwtPayload
 
   req.user = {

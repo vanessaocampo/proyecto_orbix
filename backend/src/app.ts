@@ -6,8 +6,20 @@ import cookieParser from 'cookie-parser'
 import routes from './routes'
 import { notFound, errorHandler } from './middlewares/errorHandler'
 
+import { rateLimit } from 'express-rate-limit'
+
 export function createApp(): Express {
   const app = express()
+
+  // Rate Limiting general
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    limit: 100, // Límite de 100 peticiones por ventana por IP
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { success: false, message: 'Demasiadas peticiones desde esta IP, por favor intente de nuevo en 15 minutos' }
+  })
+  app.use(limiter)
 
   app.use(helmet())
   app.use(cors({ origin: 'http://localhost:5173', credentials: true }))

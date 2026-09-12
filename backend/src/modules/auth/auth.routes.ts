@@ -5,9 +5,19 @@ import { asyncHandler } from '../../utils/asyncHandler'
 import * as authController from './auth.controller'
 import { changePasswordSchema, loginSchema } from './auth.schemas'
 
+import { rateLimit } from 'express-rate-limit'
+
 const router = Router()
 
-router.post('/login', validate({ body: loginSchema }), asyncHandler(authController.login))
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  limit: 5, // Límite de 5 intentos fallidos/exitosos de login por IP
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { success: false, message: 'Demasiados intentos de inicio de sesión desde esta IP, por favor intente de nuevo después de 15 minutos' }
+})
+
+router.post('/login', loginLimiter, validate({ body: loginSchema }), asyncHandler(authController.login))
 router.post('/refresh', asyncHandler(authController.refresh))
 router.post('/logout', asyncHandler(authController.logout))
 
