@@ -197,6 +197,7 @@ model DetalleVenta {
 
 model InventarioMovimiento {
   idMovimiento    String            @id @default(uuid()) @map("id_movimiento")
+  codigoMovimiento String?          @unique @map("codigo_movimiento") @db.VarChar(50)
   idProducto      String            @map("id_producto")
   tipo            TipoMovimientoInv
   cantidad        Int

@@ -39,6 +39,24 @@ async function getProducto(tx: PrismaTransactionClient, idProducto: string) {
   return producto
 }
 
+
+async function generarCodigoMovimiento(tx: PrismaTransactionClient): Promise<string> {
+  const movimientos = await tx.inventarioMovimiento.findMany({
+    where: { codigoMovimiento: { not: null } },
+    select: { codigoMovimiento: true },
+  })
+
+  let siguienteNumero = 0
+  for (const mov of movimientos) {
+    const numero = Number((mov.codigoMovimiento ?? '').replace(/^\D+/, ''))
+    if (Number.isInteger(numero) && numero > siguienteNumero) {
+      siguienteNumero = numero
+    }
+  }
+
+  return `MOV-${String(siguienteNumero + 1).padStart(4, '0')}`
+}
+
 async function registrarMovimiento(
   tx: PrismaTransactionClient,
   data: {
