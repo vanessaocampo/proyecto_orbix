@@ -29,7 +29,7 @@ async function verificarRecaptcha(captcha: string) {
 }
 
 export function signAccessToken(payload: { id: string; correo: string; rol: string }): string {
-  const options: SignOptions = { expiresIn: '15m' }
+  const options: SignOptions = { expiresIn: '12h' }
   return jwt.sign(
     { sub: payload.id.toString(), correo: payload.correo, rol: payload.rol, type: 'access' },
     env.JWT_SECRET,
