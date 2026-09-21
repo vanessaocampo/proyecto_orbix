@@ -35,27 +35,27 @@ model Proveedor {
 }
 
 model Usuario {
-  idUsuario              String                 @id @default(uuid()) @map("id_usuario")
-  nombre                 String                 @db.VarChar(150)
-  correo                 String                 @unique @db.VarChar(120)
-  passwordHash           String                 @map("password_hash") @db.VarChar(255)
-  rol                    RolUsuario             @default(vendedor)
-  estado                 EstadoGeneral          @default(activo)
-  createdAt              DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt              DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
-  celular                String?                @db.VarChar(20)
-  correoPersonal         String?                @map("correo_personal") @db.VarChar(120)
-  direccion              String?                @db.VarChar(255)
-  fechaIngreso           DateTime?              @map("fecha_ingreso") @db.Date
-  fechaNacimiento        DateTime?              @map("fecha_nacimiento") @db.Date
-  identificacion         String?                @unique @db.VarChar(50)
-  codigo_empleado        String?                @unique @db.VarChar(50)
-  ciudad                 String?                @db.VarChar(100)
-  resetPasswordToken   String?   @map("reset_password_token") @db.VarChar(255)
-  resetPasswordExpires DateTime? @map("reset_password_expires") @db.Timestamptz(6)
-  inventarioMovimientos  InventarioMovimiento[]
-  reportes               Reporte[]
-  ventas                 Venta[]
+  idUsuario             String                 @id @default(uuid()) @map("id_usuario")
+  nombre                String                 @db.VarChar(150)
+  correo                String                 @unique @db.VarChar(120)
+  passwordHash          String                 @map("password_hash") @db.VarChar(255)
+  rol                   RolUsuario             @default(vendedor)
+  estado                EstadoGeneral          @default(activo)
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  celular               String?                @db.VarChar(20)
+  correoPersonal        String?                @map("correo_personal") @db.VarChar(120)
+  direccion             String?                @db.VarChar(255)
+  fechaIngreso          DateTime?              @map("fecha_ingreso") @db.Date
+  fechaNacimiento       DateTime?              @map("fecha_nacimiento") @db.Date
+  identificacion        String?                @unique @db.VarChar(50)
+  codigo_empleado       String?                @unique @db.VarChar(50)
+  ciudad                String?                @db.VarChar(100)
+  resetPasswordToken    String?                @map("reset_password_token") @db.VarChar(255)
+  resetPasswordExpires  DateTime?              @map("reset_password_expires") @db.Timestamptz(6)
+  inventarioMovimientos InventarioMovimiento[]
+  reportes              Reporte[]
+  ventas                Venta[]
 
   @@map("usuarios")
 }

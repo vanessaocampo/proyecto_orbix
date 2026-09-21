@@ -10,7 +10,11 @@ const envSchema = z.object({
 
   JWT_SECRET: z.string().min(8, 'JWT_SECRET debe tener al menos 8 caracteres'),
 
-  JWT_EXPIRES_IN: z.string().default('8h'),
+  // Tiempo de expiración del access token.
+  JWT_EXPIRES_IN: z.string().default('4h'),
+
+  // Tiempo de expiración del refresh token.
+  JWT_REFRESH_EXPIRES_IN: z.string().default('24h'),
 
   RECAPTCHA_SECRET_KEY: z.string().min(1, 'RECAPTCHA_SECRET_KEY es obligatoria'),
 

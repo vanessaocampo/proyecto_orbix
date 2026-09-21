@@ -11,7 +11,7 @@ export async function login(req: Request, res: Response) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    maxAge: 24 * 60 * 60 * 1000 // 24h
   })
 
   
@@ -19,7 +19,7 @@ export async function login(req: Request, res: Response) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 12 * 60 * 60 * 1000 // 12 hours
+    maxAge: 4 * 60 * 60 * 1000 // 4h
   })
 
   res.status(200).json({ 
@@ -32,17 +32,19 @@ export async function refresh(req: Request, res: Response) {
   const refreshToken = req.cookies?.refreshToken
 
   if (!refreshToken) {
-    return res.status(401).json({ success: false, message: 'Refresh token requerido' })
+    return res.status(401).json({
+      success: false,
+      message: 'Refresh token requerido'
+    })
   }
 
   const result = await authService.refreshTokenLogic(refreshToken)
 
-  
   res.cookie('accessToken', result.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 12 * 60 * 60 * 1000
+    maxAge: 4 * 60 * 60 * 1000
   })
 
   res.status(200).json({
