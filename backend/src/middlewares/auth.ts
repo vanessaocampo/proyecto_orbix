@@ -10,6 +10,7 @@ type JwtPayload = {
   correo: string
   rol: RolUsuario
   type?: string
+  tokenVersion: number
 }
 
 export const authenticate: RequestHandler = asyncHandler(
@@ -45,6 +46,17 @@ export const authenticate: RequestHandler = asyncHandler(
         throw ApiError.unauthorized(
           'Token de acceso inválido'
         )
+      }
+
+      // Validar tokenVersion para revocar sesiones
+      const { prisma } = require('../config/prisma');
+      const usuario = await prisma.usuario.findUnique({
+        where: { idUsuario: payload.sub },
+        select: { tokenVersion: true }
+      });
+
+      if (!usuario || usuario.tokenVersion !== payload.tokenVersion) {
+        throw ApiError.unauthorized('Sesión caducada. Inicia sesión nuevamente.');
       }
 
       req.user = {

@@ -53,6 +53,7 @@ model Usuario {
   ciudad                String?                @db.VarChar(100)
   resetPasswordToken    String?                @map("reset_password_token") @db.VarChar(255)
   resetPasswordExpires  DateTime?              @map("reset_password_expires") @db.Timestamptz(6)
+  tokenVersion          Int                    @default(0) @map("token_version")
   inventarioMovimientos InventarioMovimiento[]
   reportes              Reporte[]
   ventas                Venta[]

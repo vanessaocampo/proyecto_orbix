@@ -1,4 +1,4 @@
-﻿import bcrypt from 'bcryptjs'
+import bcrypt from 'bcryptjs'
 import jwt, { type SignOptions } from 'jsonwebtoken'
 import { env } from '../../config/env'
 import { prisma } from '../../config/prisma'
@@ -60,6 +60,7 @@ export function signAccessToken(
     id: string
     correo: string
     rol: string
+    tokenVersion: number
   }
 ): string {
   const options: SignOptions = {
@@ -73,6 +74,7 @@ export function signAccessToken(
       correo: payload.correo,
       rol: payload.rol,
       type: 'access',
+      tokenVersion: payload.tokenVersion,
     },
     env.JWT_SECRET,
     options
@@ -82,6 +84,7 @@ export function signAccessToken(
 export function signRefreshToken(
   payload: {
     id: string
+    tokenVersion: number
   }
 ): string {
   const options: SignOptions = {
@@ -93,6 +96,7 @@ export function signRefreshToken(
     {
       sub: payload.id.toString(),
       type: 'refresh',
+      tokenVersion: payload.tokenVersion,
     },
     env.JWT_SECRET,
     options
@@ -142,11 +146,13 @@ export async function login(
       id: usuario.idUsuario,
       correo: usuario.correo,
       rol: usuario.rol,
+      tokenVersion: usuario.tokenVersion,
     })
 
   const refreshToken =
     signRefreshToken({
       id: usuario.idUsuario,
+      tokenVersion: usuario.tokenVersion,
     })
 
   return {
@@ -234,6 +240,7 @@ export async function changePassword(
     },
     data: {
       passwordHash,
+      tokenVersion: { increment: 1 },
     },
   })
 }
@@ -249,6 +256,7 @@ export async function refreshTokenLogic(
       ) as {
         sub: string
         type: string
+        tokenVersion: number
       }
 
     if (payload.type !== 'refresh') {
@@ -266,10 +274,11 @@ export async function refreshTokenLogic(
 
     if (
       !usuario ||
-      usuario.estado !== 'activo'
+      usuario.estado !== 'activo' ||
+      usuario.tokenVersion !== payload.tokenVersion
     ) {
       throw ApiError.unauthorized(
-        'Usuario inválido o inactivo'
+        'Usuario inválido, inactivo o sesión caducada'
       )
     }
 
@@ -278,6 +287,7 @@ export async function refreshTokenLogic(
         id: usuario.idUsuario,
         correo: usuario.correo,
         rol: usuario.rol,
+        tokenVersion: usuario.tokenVersion,
       })
 
     return {
@@ -455,6 +465,7 @@ export async function resetPassword(
       passwordHash,
       resetPasswordToken: null,
       resetPasswordExpires: null,
+      tokenVersion: { increment: 1 },
     },
   })
 }
